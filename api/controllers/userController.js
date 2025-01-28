@@ -1,46 +1,42 @@
-import cloudinary from "../config/cloudinary.js"; // Assuming you're using Cloudinary for image upload
-import User from "../models/User.js"; // Adjust this import as needed for your User model
+import cloudinary from "../config/cloudinary.js";
+import User from "../models/User.js";
 
 export const updateProfile = async (req, res) => {
-  try {
-    let updatedUser = {};
-    
-    // Check if there's a file in the request (image upload)
-    if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-        // Optional: set transformation options here, e.g., resizing images
-        resource_type: "image",
-        folder: "your_folder_name", // Customize your Cloudinary folder name here
-        // Add any other settings you may need
-      });
+	// image => cloudinary -> image.cloudinary.your => mongodb
 
-      if (!uploadResult) {
-        return res.status(500).json({ message: "Error uploading image to Cloudinary" });
-      }
+	try {
+		const { image, ...otherData } = req.body;
 
-      // Set the profile image URL from the upload result
-      updatedUser.profilePicture = uploadResult.secure_url; // The image URL returned from Cloudinary
-    }
+		let updatedData = otherData;
 
-    // Update user profile information (e.g., name, bio, etc.)
-    if (req.body.name) updatedUser.name = req.body.name;
-    if (req.body.bio) updatedUser.bio = req.body.bio;
+		if (image) {
+			// base64 format
+			if (image.startsWith("data:image")) {
+				try {
+					const uploadResponse = await cloudinary.uploader.upload(image);
+					updatedData.image = uploadResponse.secure_url;
+				} catch (error) {
+					console.error("Error uploading image:", uploadError);
 
-    // Update the user in the database
-    const user = await User.findByIdAndUpdate(req.user.id, updatedUser, {
-      new: true,
-    });
+					return res.status(400).json({
+						success: false,
+						message: "Error uploading image",
+					});
+				}
+			}
+		}
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+		const updatedUser = await User.findByIdAndUpdate(req.user.id, updatedData, { new: true });
 
-    return res.status(200).json({
-      message: "Profile updated successfully",
-      user,
-    });
-  } catch (err) {
-    console.error("Error in updateProfile:", err);
-    res.status(500).json({ message: "Server error, please try again later." });
-  }
+		res.status(200).json({
+			success: true,
+			user: updatedUser,
+		});
+	} catch (error) {
+		console.log("Error in updateProfile: ", error);
+		res.status(500).json({
+			success: false,
+			message: "Internal server error",
+		});
+	}
 };

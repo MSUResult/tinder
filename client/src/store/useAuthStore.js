@@ -17,7 +17,7 @@ export const useAuthStore = create((set) => ({
 
 			toast.success("Account created successfully");
 		} catch (error) {
-			toast.error(error.response?.data?.message || "Something went wrong");
+			toast.error(error.response.data.message || "Something went wrong");
 		} finally {
 			set({ loading: false });
 		}
@@ -30,7 +30,7 @@ export const useAuthStore = create((set) => ({
 			initializeSocket(res.data.user._id);
 			toast.success("Logged in successfully");
 		} catch (error) {
-			toast.error(error.response?.data?.message || "Something went wrong");
+			toast.error(error.response.data.message || "Something went wrong");
 		} finally {
 			set({ loading: false });
 		}
@@ -41,7 +41,7 @@ export const useAuthStore = create((set) => ({
 			disconnectSocket();
 			if (res.status === 200) set({ authUser: null });
 		} catch (error) {
-			toast.error(error.response?.data?.message || "Something went wrong");
+			toast.error(error.response.data.message || "Something went wrong");
 		}
 	},
 	checkAuth: async () => {
@@ -54,23 +54,6 @@ export const useAuthStore = create((set) => ({
 			console.log(error);
 		} finally {
 			set({ checkingAuth: false });
-		}
-	},
-
-	updateProfile: async (profileData) => {
-		try {
-			set({ loading: true });
-			const res = await axiosInstance.put("/auth/profile", profileData); // Ensure PUT method
-			set({ authUser: res.data.user });
-			toast.success("Profile updated successfully");
-		} catch (error) {
-			if (error.response && error.response.status === 404) {
-				toast.error("Profile update failed. Endpoint not found.");
-			} else {
-				toast.error(error.response?.data?.message || "Failed to update profile");
-			}
-		} finally {
-			set({ loading: false });
 		}
 	},
 
