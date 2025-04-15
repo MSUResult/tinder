@@ -27,7 +27,8 @@ export const Header = () => {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <HeartPulse className="w-8 h-8 text-[#5D3FD3] transition-transform transform hover:rotate-12" />
+              <HeartPulse className="hidden sm:block w-8 h-8 text-[#5D3FD3] transition-transform transform hover:rotate-12" />
+
               <span className="text-2xl font-bold text-[#5D3FD3] hidden sm:inline">
                 Swipe less, connect more!
               </span>
